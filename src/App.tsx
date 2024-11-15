@@ -1,4 +1,4 @@
-import { lazy, useState, useTransition } from "react"
+import { lazy, useMemo, useState, useTransition, Suspense } from "react"
 import { useCoureses } from "./hooks/useCourses"
 
 const CourseList = lazy(() => import('./components/CourseList'))
@@ -11,13 +11,27 @@ const App: React.FC = () => {
 
   const [ isPending, startTransition ] = useTransition()
 
+  const currenCourses = useMemo(() => {
+    if (!courses) return []
+
+    const indexOfLastCourse = currentPage * coursesPerPage
+    const indexOfFirstCourse = indexOfLastCourse - coursesPerPage
+
+    return courses?.slice(indexOfFirstCourse, indexOfLastCourse)
+  }, [courses, currentPage, coursesPerPage])
+
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: { error.message}</div>
   if (!courses) return <div>courses not found</div>
 
   return (
     <section>
-      <CourseList courses={} />
+      <h1>🧑🏻‍🎓 Learning Courses 📚</h1>
+
+      <Suspense fallback={ <div>Loading courses...</div> }>
+        <CourseList courses={ currenCourses } />
+      </Suspense>
+
 
       <div>
         {
